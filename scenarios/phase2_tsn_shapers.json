@@ -1,0 +1,188 @@
+{
+  "simulation": {
+    "seed": 42,
+    "duration_ms": 20.0
+  },
+  "nodes": [
+    {
+      "name": "ES_Talker",
+      "type": "end_station",
+      "mac": "02:00:00:00:00:01",
+      "clock_offset_ns": 5000,
+      "clock_drift_ppb": 15000.0
+    },
+    {
+      "name": "SW1",
+      "type": "switch",
+      "ports": 4,
+      "fabric_delay_ns": 1000,
+      "queue_capacity": 64,
+      "clock_offset_ns": 0,
+      "clock_drift_ppb": 0.0
+    },
+    {
+      "name": "SW2",
+      "type": "switch",
+      "ports": 4,
+      "fabric_delay_ns": 1000,
+      "queue_capacity": 64,
+      "clock_offset_ns": -8000,
+      "clock_drift_ppb": -20000.0
+    },
+    {
+      "name": "ES_Listener",
+      "type": "end_station",
+      "mac": "02:00:00:00:00:02",
+      "clock_offset_ns": 12000,
+      "clock_drift_ppb": 10000.0
+    }
+  ],
+  "links": [
+    {
+      "name": "L1_Talker_SW1",
+      "rate_mbps": 1000,
+      "propagation_delay_ns": 100,
+      "a": { "node": "ES_Talker", "port": 0 },
+      "b": { "node": "SW1", "port": 0 }
+    },
+    {
+      "name": "L2_SW1_SW2",
+      "rate_mbps": 1000,
+      "propagation_delay_ns": 200,
+      "a": { "node": "SW1", "port": 1 },
+      "b": { "node": "SW2", "port": 0 }
+    },
+    {
+      "name": "L3_SW2_Listener",
+      "rate_mbps": 1000,
+      "propagation_delay_ns": 100,
+      "a": { "node": "SW2", "port": 1 },
+      "b": { "node": "ES_Listener", "port": 0 }
+    }
+  ],
+  "fdb": [
+    {
+      "switch": "SW1",
+      "dst_mac": "02:00:00:00:00:02",
+      "vid": 10,
+      "egress_ports": [1]
+    },
+    {
+      "switch": "SW2",
+      "dst_mac": "02:00:00:00:00:02",
+      "vid": 10,
+      "egress_ports": [1]
+    }
+  ],
+  "gptp": {
+    "enabled": true,
+    "gm_node": "SW1",
+    "sync_interval_ms": 1.0,
+    "pdelay_interval_ms": 1.0,
+    "nodes": [
+      {
+        "node": "SW1",
+        "ports": [
+          { "port": 0, "role": "master" },
+          { "port": 1, "role": "master" }
+        ]
+      },
+      {
+        "node": "ES_Talker",
+        "ports": [
+          { "port": 0, "role": "slave" }
+        ]
+      },
+      {
+        "node": "SW2",
+        "ports": [
+          { "port": 0, "role": "slave" },
+          { "port": 1, "role": "master" }
+        ]
+      },
+      {
+        "node": "ES_Listener",
+        "ports": [
+          { "port": 0, "role": "slave" }
+        ]
+      }
+    ]
+  },
+  "qbv": [
+    {
+      "switch": "SW1",
+      "port": 1,
+      "base_time_us": 0.0,
+      "cycle_time_us": 500.0,
+      "guard_band": true,
+      "gcl": [
+        { "gate_mask": "0b01000000", "duration_us": 50.0,  "op": "set" },
+        { "gate_mask": "0b10111111", "duration_us": 450.0, "op": "set" }
+      ]
+    },
+    {
+      "switch": "SW2",
+      "port": 1,
+      "base_time_us": 0.0,
+      "cycle_time_us": 500.0,
+      "guard_band": true,
+      "gcl": [
+        { "gate_mask": "0b01000000", "duration_us": 50.0,  "op": "set" },
+        { "gate_mask": "0b10111111", "duration_us": 450.0, "op": "set" }
+      ]
+    }
+  ],
+  "qav": [
+    {
+      "switch": "SW1",
+      "port": 1,
+      "tc": 5,
+      "idle_slope_mbps": 100.0
+    },
+    {
+      "switch": "SW2",
+      "port": 1,
+      "tc": 5,
+      "idle_slope_mbps": 100.0
+    }
+  ],
+  "streams": [
+    {
+      "id": 1,
+      "name": "TT_Control",
+      "talker": "ES_Talker",
+      "listener": "ES_Listener",
+      "vid": 10,
+      "pcp": 6,
+      "frame_bytes": 128,
+      "period_us": 500.0,
+      "start_us": 1010.0,
+      "deadline_us": 50.0
+    },
+    {
+      "id": 2,
+      "name": "AVB_ClassA",
+      "talker": "ES_Talker",
+      "listener": "ES_Listener",
+      "vid": 10,
+      "pcp": 5,
+      "frame_bytes": 512,
+      "period_us": 500.0,
+      "start_us": 1060.0,
+      "burst_count": 3,
+      "deadline_us": 250.0
+    },
+    {
+      "id": 3,
+      "name": "BE_Bulk",
+      "talker": "ES_Talker",
+      "listener": "ES_Listener",
+      "vid": 10,
+      "pcp": 0,
+      "frame_bytes": 1500,
+      "period_us": 250.0,
+      "start_us": 1070.0,
+      "burst_count": 2
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "simulation": {
+    "seed": 42,
+    "duration_ms": 10.0
+  },
+  "nodes": [
+    {
+      "name": "ES_Talker",
+      "type": "end_station",
+      "mac": "02:00:00:00:00:01",
+      "clock_drift_ppb": 0.0
+    },
+    {
+      "name": "SW1",
+      "type": "switch",
+      "ports": 4,
+      "fabric_delay_ns": 1000,
+      "queue_capacity": 64
+    },
+    {
+      "name": "SW2",
+      "type": "switch",
+      "ports": 4,
+      "fabric_delay_ns": 1000,
+      "queue_capacity": 64
+    },
+    {
+      "name": "ES_Listener",
+      "type": "end_station",
+      "mac": "02:00:00:00:00:02",
+      "clock_drift_ppb": 0.0
+    }
+  ],
+  "links": [
+    {
+      "name": "L1_Talker_SW1",
+      "rate_mbps": 1000,
+      "propagation_delay_ns": 100,
+      "a": { "node": "ES_Talker", "port": 0 },
+      "b": { "node": "SW1", "port": 0 }
+    },
+    {
+      "name": "L2_SW1_SW2",
+      "rate_mbps": 1000,
+      "propagation_delay_ns": 200,
+      "a": { "node": "SW1", "port": 1 },
+      "b": { "node": "SW2", "port": 0 }
+    },
+    {
+      "name": "L3_SW2_Listener",
+      "rate_mbps": 1000,
+      "propagation_delay_ns": 100,
+      "a": { "node": "SW2", "port": 1 },
+      "b": { "node": "ES_Listener", "port": 0 }
+    }
+  ],
+  "fdb": [
+    {
+      "switch": "SW1",
+      "dst_mac": "02:00:00:00:00:02",
+      "vid": 10,
+      "egress_ports": [1]
+    },
+    {
+      "switch": "SW2",
+      "dst_mac": "02:00:00:00:00:02",
+      "vid": 10,
+      "egress_ports": [1]
+    }
+  ],
+  "streams": [
+    {
+      "id": 1,
+      "name": "TT_Control",
+      "talker": "ES_Talker",
+      "listener": "ES_Listener",
+      "vid": 10,
+      "pcp": 6,
+      "frame_bytes": 128,
+      "period_us": 500.0,
+      "start_us": 100.0,
+      "deadline_us": 50.0
+    },
+    {
+      "id": 2,
+      "name": "BE_Background",
+      "talker": "ES_Talker",
+      "listener": "ES_Listener",
+      "vid": 10,
+      "pcp": 0,
+      "frame_bytes": 1500,
+      "period_us": 250.0,
+      "start_us": 0.0,
+      "burst_count": 2
+    }
+  ]
+}

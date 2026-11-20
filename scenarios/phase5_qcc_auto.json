@@ -1,0 +1,108 @@
+{
+  "simulation": {
+    "seed": 42,
+    "duration_ms": 10.0
+  },
+  "nodes": [
+    { "name": "ES_Talker",   "type": "end_station", "mac": "02:00:00:00:00:01" },
+    { "name": "SW1_Split",   "type": "switch", "ports": 4, "fabric_delay_ns": 1000 },
+    { "name": "SW2_PathA",   "type": "switch", "ports": 4, "fabric_delay_ns": 1000 },
+    { "name": "SW3_PathB",   "type": "switch", "ports": 4, "fabric_delay_ns": 1000 },
+    { "name": "SW4_Elim",    "type": "switch", "ports": 4, "fabric_delay_ns": 1000 },
+    { "name": "ES_Listener", "type": "end_station", "mac": "02:00:00:00:00:02" }
+  ],
+  "links": [
+    {
+      "name": "L_Talker_SW1", "rate_mbps": 1000, "propagation_delay_ns": 100,
+      "a": { "node": "ES_Talker", "port": 0 }, "b": { "node": "SW1_Split", "port": 0 }
+    },
+    {
+      "name": "L_SW1_SW2", "rate_mbps": 1000, "propagation_delay_ns": 100,
+      "a": { "node": "SW1_Split", "port": 1 }, "b": { "node": "SW2_PathA", "port": 0 }
+    },
+    {
+      "name": "L_SW1_SW3", "rate_mbps": 1000, "propagation_delay_ns": 400,
+      "a": { "node": "SW1_Split", "port": 2 }, "b": { "node": "SW3_PathB", "port": 0 }
+    },
+    {
+      "name": "L_SW2_SW4", "rate_mbps": 1000, "propagation_delay_ns": 100,
+      "a": { "node": "SW2_PathA", "port": 1 }, "b": { "node": "SW4_Elim", "port": 0 }
+    },
+    {
+      "name": "L_SW3_SW4", "rate_mbps": 1000, "propagation_delay_ns": 400,
+      "a": { "node": "SW3_PathB", "port": 1 }, "b": { "node": "SW4_Elim", "port": 1 }
+    },
+    {
+      "name": "L_SW4_Listener", "rate_mbps": 1000, "propagation_delay_ns": 100,
+      "a": { "node": "SW4_Elim", "port": 2 }, "b": { "node": "ES_Listener", "port": 0 }
+    }
+  ],
+  "streams": [
+    {
+      "id": 1,
+      "name": "Safety_TT_FRER",
+      "talker": "ES_Talker",
+      "listener": "ES_Listener",
+      "vid": 10,
+      "pcp": 6,
+      "scheduled": true,
+      "redundancy_paths": 2,
+      "frame_bytes": 128,
+      "period_us": 500.0,
+      "start_us": 50.0,
+      "deadline_us": 30.0
+    },
+    {
+      "id": 2,
+      "name": "AVB_Video",
+      "talker": "ES_Talker",
+      "listener": "ES_Listener",
+      "vid": 11,
+      "pcp": 5,
+      "scheduled": false,
+      "avb_idle_slope_mbps": 150.0,
+      "frame_bytes": 512,
+      "period_us": 500.0,
+      "start_us": 120.0,
+      "burst_count": 2,
+      "deadline_us": 200.0
+    },
+    {
+      "id": 3,
+      "name": "BE_Logs",
+      "talker": "ES_Talker",
+      "listener": "ES_Listener",
+      "vid": 12,
+      "pcp": 0,
+      "scheduled": false,
+      "frame_bytes": 1400,
+      "period_us": 500.0,
+      "start_us": 200.0
+    }
+  ],
+  "qcc": {
+    "enabled": true,
+    "guard_margin_us": 5.0,
+    "guard_band": true,
+    "dynamic_streams": [
+      {
+        "id": 4,
+        "name": "Dynamic_TT",
+        "at_ms": 4.0,
+        "talker": "ES_Talker",
+        "listener": "ES_Listener",
+        "vid": 13,
+        "pcp": 6,
+        "scheduled": true,
+        "frame_bytes": 128,
+        "period_us": 500.0,
+        "offset_us": 150.0,
+        "deadline_us": 30.0
+      }
+    ]
+  },
+  "faults": [
+    { "link": "L_SW1_SW2", "at_ms": 2.0, "action": "down" },
+    { "link": "L_SW1_SW2", "at_ms": 3.5, "action": "up" }
+  ]
+}
